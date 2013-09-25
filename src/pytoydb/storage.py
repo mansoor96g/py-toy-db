@@ -46,7 +46,8 @@ class Storage(object):
         индекс добавленного элемента
         """
         val = self._struct.pack(*data)
-        pos = self._io.seek(0, 2) // self._struct.size
+        self._io.seek(0, 2)
+        pos = self._io.tell() // self._struct.size
         self._io.write(val)
         self._size = pos + 1
         return pos
