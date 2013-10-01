@@ -10,7 +10,56 @@ import io
 class Storage(object):
     """
     Хранилище гомогенных данных в компактной форме
+
+    Пример использования:
+    =====================
+
+    Создание хранилища:
+    >>> store = Storage('LL?', io.BytesIO())
+
+    Добавление элементов:
+    >>> ids = [store.add((x, 10 - x, x % 2 == 0)) for x in xrange(10)]
+
+    Теперь хранилище можно итерировать:
+    >>> for i in store:
+    ...     print i
+    ...
+    (0, 10, True)
+    (1, 9, False)
+    (2, 8, True)
+    (3, 7, False)
+    (4, 6, True)
+    (5, 5, False)
+    (6, 4, True)
+    (7, 3, False)
+    (8, 2, True)
+    (9, 1, False)
+
+    Элементы доступны по индексу:
+    >>> for i in ids[-1:0:-2]:
+    ...     print store[i]
+    ...
+    (9, 1, False)
+    (7, 3, False)
+    (5, 5, False)
+    (3, 7, False)
+    (1, 9, False)
+
+    Элементы можно удалять по индексу:
+    >>> store.remove(1)
+    >>> store.remove(2)
+    >>> store.remove(3)
+    >>> store.remove(4)
+    >>> store.remove(5)
+    >>> print list(store)
+    [(0, 10, True), (2, 8, True), (4, 6, True), (6, 4, True), (8, 2, True)]
+
+    Также по индексу элементы можно перезаписывать:
+    >>> store[0] = (42, 42, False)
+    >>> print list(store)
+    [(42, 42, False), (2, 8, True), (4, 6, True), (6, 4, True), (8, 2, True)]
     """
+
     def __init__(self, fmt, buff):
         """
         Метод конструирует хранилище данных
@@ -98,24 +147,5 @@ class Storage(object):
 
 
 if __name__ == '__main__':
-    store = Storage('LL?', io.BytesIO())
-
-    print "-- create --"
-    ids = [store.add((x, 10 - x, x % 2 == 0)) for x in xrange(10)]
-    print list(store)
-
-    print "-- select --"
-    for i in ids[-1:0:-2]:
-        print 'store[%d] =>' % i, store[i]
-
-    print "-- remove --"
-    store.remove(1)
-    store.remove(2)
-    store.remove(3)
-    store.remove(4)
-    store.remove(5)
-    print list(store)
-
-    print "-- replace --"
-    store[0] = (10000, 10000, False)
-    print list(store)
+    from doctest import testmod
+    print testmod()

@@ -4,7 +4,7 @@ Pure-Python "игрушечная" *документо-ориентирован�
 
 [Подробнее в Wiki](https://github.com/astynax/py-toy-db/wiki)
 
-Работа с Depositary
+Работа с Depository
 ===================
 
     >>> from pytoydb.depository import Depository
@@ -15,17 +15,17 @@ Pure-Python "игрушечная" *документо-ориентирован�
     >>> class MyDataCls(object):
     ...     a=1
 
-Данные    
+Данные
 
     >>> my_data = {'my_awesome_record':{'first_field':1, 'last_field':'1'}}
 
 создадим хранилище
 
     >>> dep = Depository()
-    
+
 добавление
 
-    >>> dict_id = dep.add(my_data)    
+    >>> dict_id = dep.add(my_data)
 
 Получение
 
