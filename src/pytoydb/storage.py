@@ -68,7 +68,7 @@ class Storage(object):
         """
         self._struct = struct.Struct(fmt)
         self._io = buff
-        self._size = 0
+        self._size = None
 
     @property
     def _pos(self):
@@ -87,6 +87,9 @@ class Storage(object):
         """
         Метод возвращает длину контейнера в элементах
         """
+        if self._size is None:
+            self._io.seek(0, 2)
+            self._size = self._io.tell() // self._struct.size
         return self._size
 
     def add(self, data):
