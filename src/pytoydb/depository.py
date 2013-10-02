@@ -55,7 +55,7 @@ class Depository(object):
         pos = self.indexmap.get(id_)
         if pos is None:
             raise IndexError(
-                u'Запись с идентификатором %s не найдена' % id_)
+                'Запись с идентификатором %s не найдена' % id_)
         id_, offset, size = self.store[pos]
         self.dep.seek(offset)
         pdata = self.dep.read(size)
@@ -71,7 +71,7 @@ class Depository(object):
             pdata = pickle.dumps(data)
         except pickle.PicklingError as err:
             raise ValueError(
-                u'Невозможно сохранить объект: %s' % err)
+                'Невозможно сохранить объект: %s' % err)
         else:
             id_ = max(self.indexmap.keys() + [0,]) + 1
             offset, size = self.dep.tell(), len(pdata)
@@ -88,7 +88,7 @@ class Depository(object):
         pos = self.indexmap.get(id_)
         if pos is None:
             raise IndexError(
-                u'Запись с идентификатором %s не найдена' % id_)
+                'Запись с идентификатором %s не найдена' % id_)
         self.store.remove(pos)
         self._remap()
 
