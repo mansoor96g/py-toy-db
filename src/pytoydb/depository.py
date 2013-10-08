@@ -127,3 +127,43 @@ class IndexedDepository(Depository):
         API которого зависит от конфигурации
         """
         return self.config[QUERY_API](self)
+
+
+import threading
+import Queue
+
+class ThreadsafeDepository(threading.Thread):
+
+    TASK_ADD, TASK_DELETE, TASK_REPLACE, TASK_GET = range(1,5)
+
+    def __init__(self, *args, **kwargs):
+        threading.Thread.__init__(self)
+        self.queue = Queue.Queue()
+        self.dep = Depository(*args, **kwargs)
+
+    def run(self):
+        while True:
+            task = self.queue.get()
+            result = self.process(task)
+            self.queue.task_done()
+
+    def add(self, data, callback=None):
+        assert callback is None or callable(callback)
+        self.queue.put_nowait({
+            "args":(data, ),
+            "task":self.TASK_ADD,
+            'callback':callback
+        })
+
+    def process(self, task):
+        task_type = task['task']
+        if task_type == self.TASK_ADD:
+            result = self.dep.add(*task['args'])
+        elif task_type == self.TASK_REMOVE:
+            result = self.dep.remove(*task['args'])
+        elif task_type == self.TASK_REPLACE:
+            result = self.dep.replace(*task['args'])
+        elif task_type == self.TASK_GET:
+            result = self.dep.get(*task['args'])
+
+        task['callback'](result)

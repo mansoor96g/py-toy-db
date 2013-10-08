@@ -103,3 +103,26 @@ Pure-Python "игрушечная" *документо-ориентирован�
     >>> dep.remove(5)
     >>> show(q)
     []
+
+### Работа с ThreadsafeDepository
+
+    >>> from pytoydb.depository import ThreadsafeDepository
+    >>> from pytoydb.config import configure
+
+    >>> dep = ThreadsafeDepository(configure())
+    >>> dep.start()
+
+
+    >>> import threading
+    >>> class Client(threading.Thread):
+    ...     def __init__(self, depository):
+    ...         threading.Thread.__init__(self)
+    ...         self.dep = depository
+    ...     def callback(self, result):
+    ...         print result
+    ...     def run(self):
+    ...         while True:
+    ...             self.dep.add({'test':'test'}, callback=self.callback)
+    >>> for i in range(5):
+    ...    Client(dep).start()
+
