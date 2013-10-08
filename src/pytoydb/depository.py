@@ -133,11 +133,15 @@ import threading
 import Queue
 
 class ThreadsafeDepository(threading.Thread):
+    """Класс потока обеспечивающий работу с депозиторием
+    из других потоков"""
 
+    #типы задач
     TASK_ADD, TASK_DELETE, TASK_REPLACE, TASK_GET = range(1,5)
 
     def __init__(self, *args, **kwargs):
         threading.Thread.__init__(self)
+        #создаем очередь задач и хранилище
         self.queue = Queue.Queue(5)
         self.dep = Depository(*args, **kwargs)
 
@@ -165,20 +169,23 @@ class ThreadsafeDepository(threading.Thread):
 
 
     def process(self, task):
+        """обработка задачи"""
 
+        #эмулируем задумчивость
         import time
         time.sleep(2)
 
-        task_type = task['task']
-        if task_type == self.TASK_ADD:
-            result = self.dep.add(*task['args'])
-            task['container'].put(result)
-            print task
+        try:
+            task_type = task['task']
+            if task_type == self.TASK_ADD:
+                result = self.dep.add(*task['args'])
+                task['container'].put(result)
+            elif task_type == self.TASK_REMOVE:
+                result = self.dep.remove(*task['args'])
+            elif task_type == self.TASK_REPLACE:
+                result = self.dep.replace(*task['args'])
+            elif task_type == self.TASK_GET:
+                result = self.dep.get(*task['args'])
+        finally:
             if 'lock' in task:
                 task['lock'].release()
-        elif task_type == self.TASK_REMOVE:
-            result = self.dep.remove(*task['args'])
-        elif task_type == self.TASK_REPLACE:
-            result = self.dep.replace(*task['args'])
-        elif task_type == self.TASK_GET:
-            result = self.dep.get(*task['args'])

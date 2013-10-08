@@ -109,9 +109,12 @@ Pure-Python "игрушечная" *документо-ориентирован�
     >>> from pytoydb.depository import ThreadsafeDepository
     >>> from pytoydb.config import configure
 
+Создаем экземпляр хранилища и запускаем его. По-умолчанию будем работать в памяти.
+
     >>> dep = ThreadsafeDepository(configure())
     >>> dep.start()
 
+Определим клиента (поток), который будет работать с хранилицем.
 
     >>> import threading
     >>> class Client(threading.Thread):
@@ -120,8 +123,11 @@ Pure-Python "игрушечная" *документо-ориентирован�
     ...         self.dep = depository
     ...     def run(self):
     ...         while True:
-    ...             #print self.dep.add({'test':'test'}, wait=True)
+    ...             print self.dep.add({'test':'test'}, wait=True)
     ...             print self.dep.add({'test':'test'})
+
+Запуск нескольких экземпляров
+
     >>> for i in range(5):
     ...    Client(dep).start()
 
