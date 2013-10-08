@@ -118,11 +118,10 @@ Pure-Python "игрушечная" *документо-ориентирован�
     ...     def __init__(self, depository):
     ...         threading.Thread.__init__(self)
     ...         self.dep = depository
-    ...     def callback(self, result):
-    ...         print result
     ...     def run(self):
     ...         while True:
-    ...             self.dep.add({'test':'test'}, callback=self.callback)
+    ...             #print self.dep.add({'test':'test'}, wait=True)
+    ...             print self.dep.add({'test':'test'})
     >>> for i in range(5):
     ...    Client(dep).start()
 

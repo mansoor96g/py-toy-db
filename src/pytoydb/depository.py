@@ -138,32 +138,47 @@ class ThreadsafeDepository(threading.Thread):
 
     def __init__(self, *args, **kwargs):
         threading.Thread.__init__(self)
-        self.queue = Queue.Queue()
+        self.queue = Queue.Queue(5)
         self.dep = Depository(*args, **kwargs)
 
     def run(self):
         while True:
             task = self.queue.get()
-            result = self.process(task)
+            self.process(task)
             self.queue.task_done()
 
-    def add(self, data, callback=None):
-        assert callback is None or callable(callback)
-        self.queue.put_nowait({
+
+    def add(self, data, wait=False):
+        container = Queue.Queue(1)
+        task = {
             "args":(data, ),
             "task":self.TASK_ADD,
-            'callback':callback
-        })
+            "container":container
+        }
+        if wait:
+            lock = threading.Lock()
+            task['lock']=lock
+        self.queue.put(task)
+        if wait:
+            lock.acquire()
+            return container.get()
+
 
     def process(self, task):
+
+        import time
+        time.sleep(2)
+
         task_type = task['task']
         if task_type == self.TASK_ADD:
             result = self.dep.add(*task['args'])
+            task['container'].put(result)
+            print task
+            if 'lock' in task:
+                task['lock'].release()
         elif task_type == self.TASK_REMOVE:
             result = self.dep.remove(*task['args'])
         elif task_type == self.TASK_REPLACE:
             result = self.dep.replace(*task['args'])
         elif task_type == self.TASK_GET:
             result = self.dep.get(*task['args'])
-
-        task['callback'](result)
