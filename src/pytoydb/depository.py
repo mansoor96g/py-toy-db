@@ -4,6 +4,8 @@
 """
 
 import pickle
+import threading
+import Queue
 
 from pytoydb import storage
 from pytoydb.config import IO_BACKEND, IO_PURPOSE_DATA, QUERY_API
@@ -129,15 +131,14 @@ class IndexedDepository(Depository):
         return self.config[QUERY_API](self)
 
 
-import threading
-import Queue
-
 class ThreadsafeDepository(threading.Thread):
-    """Класс потока обеспечивающий работу с депозиторием
-    из других потоков"""
+    """
+    Класс потока обеспечивающий работу с депозиторием
+    из других потоков
+    """
 
     #типы задач
-    TASK_ADD, TASK_DELETE, TASK_REPLACE, TASK_GET = range(1,5)
+    TASK_ADD, TASK_REMOVE, TASK_REPLACE, TASK_GET = range(1,5)
 
     def __init__(self, *args, **kwargs):
         threading.Thread.__init__(self)
@@ -151,41 +152,44 @@ class ThreadsafeDepository(threading.Thread):
             self.process(task)
             self.queue.task_done()
 
+    def _put_and_wait(self, task):
+        q = task['queue'] = Queue.Queue(1)
+        self.queue.put(task)
+        return q.get()
 
     def add(self, data, wait=False):
-        container = Queue.Queue(1)
-        task = {
-            "args":(data, ),
-            "task":self.TASK_ADD,
-            "container":container
-        }
+        task = {"task": self.TASK_ADD, "args": (data,)}
         if wait:
-            lock = threading.Lock()
-            task['lock']=lock
-        self.queue.put(task)
-        if wait:
-            lock.acquire()
-            return container.get()
+            return self._put_and_wait(task)
+        else:
+            self.queue.put(task)
 
+    def remove(self, id_):
+        self.queue.put({'task': self.TASK_REMOVE, 'args': (id_,)})
+
+    def replace(self, id_, data):
+        self.queue.put({'task': self.TASK_REPLACE, 'args': (id_, data)})
+
+    def get(self, id_):
+        return self._put_and_wait({'task': self.TASK_GET, 'args': (id_,)})
 
     def process(self, task):
-        """обработка задачи"""
+        """
+        обработка задачи
+        """
+        args, task_type, queue = map(task.get, ('args', 'task', 'queue'))
 
-        #эмулируем задумчивость
-        import time
-        time.sleep(2)
+        if queue is None:
+            def with_callback(x):
+                return x
+        else:
+            def with_callback(x):
+                queue.put(x)
+                return x
 
-        try:
-            task_type = task['task']
-            if task_type == self.TASK_ADD:
-                result = self.dep.add(*task['args'])
-                task['container'].put(result)
-            elif task_type == self.TASK_REMOVE:
-                result = self.dep.remove(*task['args'])
-            elif task_type == self.TASK_REPLACE:
-                result = self.dep.replace(*task['args'])
-            elif task_type == self.TASK_GET:
-                result = self.dep.get(*task['args'])
-        finally:
-            if 'lock' in task:
-                task['lock'].release()
+        return {
+            self.TASK_ADD: lambda args: with_callback(self.dep.add(*args)),
+            self.TASK_REMOVE: lambda args: self.dep.remove(*args),
+            self.TASK_REPLACE: lambda args: self.dep.replace(*args),
+            self.TASK_GET: lambda args: with_callback(self.dep.remove(*args)),
+        }[task_type](args)
