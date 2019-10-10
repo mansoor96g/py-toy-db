@@ -1,10 +1,10 @@
 ## Py-Toy-DB - Python Toy DataBase
 
-Pure-Python "игрушечная" *документо-ориентированная СУБД*.
+Pure-Python "игрушечная" *документо-ориентированная СУБД*.[eng](*document-oriention DB*)
 
 [Подробнее в Wiki](https://github.com/astynax/py-toy-db/wiki)
 
-## Примеры использования
+## Примеры использования[eng](Examples of using)
 
 ### Работа с Depository
 
@@ -12,29 +12,29 @@ Pure-Python "игрушечная" *документо-ориентирован�
     >>> from pytoydb.config import configure
 
 Пример наших данных которые мы собираемся хранить.
-Их может быть много и разных:
-
+Их может быть много и разных:[eng](An example of our data that we are going to store.
+There can be many and different:)
     >>> class MyDataCls(object):
     ...     a=1
 
-Данные
+Данные[eng](Data)
 
     >>> my_data = {'my_awesome_record':{'first_field':1, 'last_field':'1'}}
 
-создадим хранилище
+создадим хранилище[eng](create storage)
 
     >>> dep = Depository(configure())
 
-добавление
+добавление[eng](adding)
 
     >>> dict_id = dep.add(my_data)
 
-Получение
+Получение[eng](Getting)
 
     >>> dep.get(dict_id)
     {'my_awesome_record': {'first_field': 1, 'last_field': '1'}}
 
-удаление
+удаление[eng](removing)
 
     >>> dep.remove(dict_id)
 
@@ -44,16 +44,16 @@ Pure-Python "игрушечная" *документо-ориентирован�
     IndexError: Запись с идентификатором 1 не найдена
 
 
-### Работа с IndexedDepository
+### Работа с IndexedDepository[eng](Working with Indexed Depository)
 
-Импорты:
+Импорты:[eng](import)
 
     >>> from pytoydb.depository import IndexedDepository
     >>> from pytoydb.index import HashIndex
     >>> from pytoydb.config import configure
     >>> from pprint import pprint
 
-Создаем хранилище:
+Создаем хранилище:[eng](Create a repository:)
 
     >>> dep = IndexedDepository(
     ...     configure(
@@ -63,7 +63,7 @@ Pure-Python "игрушечная" *документо-ориентирован�
     ...         )
     ...     ))
 
-Добавляем записи (возвращаются *id* записей):
+Добавляем записи (возвращаются *id* записей):[eng](Add records (* id * records are returned):)
 
     >>> dep.add({'a': 1, 'b': 101})
     1
